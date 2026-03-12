@@ -2,8 +2,53 @@ import { Link } from "react-router";
 import { FaEye } from "react-icons/fa";
 import { IoEyeOff } from "react-icons/io5";
 import MyContainer from "../components/MyContainer";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/firebase.config";
+import { toast } from "react-toastify";
+import { useState } from "react";
 
 const Signup = () => {
+  const [show, setShow] = useState(false);
+
+  const handleSignUp = (e) => {
+    e.preventDefault();
+    const email = e.target.email?.value;
+    const password = e.target.password?.value;
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      return toast.error(
+        "Password must be at least 6 chars, include uppercase & lowercase letters, a number, and a special character.",
+      );
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((result) => {
+        console.log(result.user);
+        toast.success("Signup successful");
+      })
+      .catch((error) => {
+        if (error.code === "auth/email-already-in-use") {
+          toast.error("User already exists.");
+        } else if (error.code === "auth/invalid-email") {
+          toast.error("Invalid email address.");
+        } else if (error.code === "auth/weak-password") {
+          toast.error("Password should be at least 6 characters.");
+        } else if (error.code === "auth/user-not-found") {
+          toast.error("No user found with this email.");
+        } else if (error.code === "auth/wrong-password") {
+          toast.error("Incorrect password.");
+        } else if (error.code === "auth/too-many-requests") {
+          toast.error("Too many attempts. Try again later.");
+        } else if (error.code === "auth/network-request-failed") {
+          toast.error("Network error. Check your internet.");
+        } else {
+          toast.error(error.message);
+        }
+      });
+  };
+
   return (
     <div className="min-h-[96vh] flex items-center justify-center bg-linear-to-br from-indigo-500 via-purple-600 to-pink-500 relative overflow-hidden">
       {/* Animated floating circles */}
@@ -29,7 +74,7 @@ const Signup = () => {
               Sign Up
             </h2>
 
-            <form className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
@@ -64,14 +109,16 @@ const Signup = () => {
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={show ? "text" : "password"}
                   name="password"
                   placeholder="••••••••"
                   className="input input-bordered w-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 />
-                <span className="absolute right-2 top-9 cursor-pointer z-50">
-                  {/* {show ? <FaEye /> : <IoEyeOff />} */}
-                  <FaEye />
+                <span
+                  onClick={() => setShow(!show)}
+                  className="absolute right-2 top-9 cursor-pointer z-50"
+                >
+                  {show ? <FaEye /> : <IoEyeOff />}
                 </span>
               </div>
 
