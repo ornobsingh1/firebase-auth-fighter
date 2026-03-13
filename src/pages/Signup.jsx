@@ -1,17 +1,28 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { FaEye } from "react-icons/fa";
 import { IoEyeOff } from "react-icons/io5";
 import MyContainer from "../components/MyContainer";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebase.config";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
   const [show, setShow] = useState(false);
+  const navigate = useNavigate();
+
+  const {
+    createUserWithEmailAndPasswordFunc,
+    updateProfileFunc,
+    sendEmailVerificationFunc,
+    setLoading,
+    signOutUserFunc,
+    setUser,
+  } = useContext(AuthContext);
 
   const handleSignUp = (e) => {
     e.preventDefault();
+    const displayName = e.target.name?.value;
+    const photoURL = e.target.photo?.value;
     const email = e.target.email?.value;
     const password = e.target.password?.value;
 
@@ -23,10 +34,33 @@ const Signup = () => {
       );
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
+    //step-1: create user...
+    createUserWithEmailAndPasswordFunc(email, password)
       .then((result) => {
-        console.log(result.user);
-        toast.success("Signup successful");
+        // step-2: update profile...
+        updateProfileFunc(displayName, photoURL)
+          .then(() => {
+            // step-3: email verification...
+            sendEmailVerificationFunc()
+              .then(() => {
+                setLoading(false);
+
+                // signout..
+                signOutUserFunc().then(() => {
+                  toast.success(
+                    "Signup successful. Check your email to validate your account.",
+                  );
+                  setUser(null);
+                  navigate("/signin");
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message);
+              });
+          })
+          .catch((error) => {
+            toast.error(error.message);
+          });
       })
       .catch((error) => {
         if (error.code === "auth/email-already-in-use") {
