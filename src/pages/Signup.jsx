@@ -36,7 +36,7 @@ const Signup = () => {
 
     //step-1: create user...
     createUserWithEmailAndPasswordFunc(email, password)
-      .then((result) => {
+      .then(() => {
         // step-2: update profile...
         updateProfileFunc(displayName, photoURL)
           .then(() => {

@@ -1,10 +1,11 @@
-import { Link } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import MyContainer from "../components/MyContainer";
 import { FaEye } from "react-icons/fa";
 import { IoEyeOff } from "react-icons/io5";
 import { useContext, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../context/AuthContext";
+import { useLocation } from "react-router";
 
 const Signin = () => {
   const [show, setShow] = useState(false);
@@ -14,11 +15,19 @@ const Signin = () => {
     signInWithGoogleFunc,
     signInWithGithubFunc,
     sendPasswordResetEmailFunc,
+    user,
     setUser,
     setLoading,
   } = useContext(AuthContext);
 
+  const location = useLocation();
+  const from = location.state || "/";
+  const navigate = useNavigate();
+
   const emailRef = useRef(null);
+  if (user) {
+    return Navigate("/");
+  }
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -37,6 +46,7 @@ const Signin = () => {
         setUser(result.user);
         toast.success("Signin successful");
         e.target.reset();
+        navigate(from);
       })
       .catch((error) => {
         toast.error(error.message);
@@ -48,6 +58,7 @@ const Signin = () => {
       .then((result) => {
         setUser(result.user);
         toast.success("Google signin successful");
+        navigate(from);
         setLoading(false);
       })
       .catch((error) => {
@@ -61,6 +72,7 @@ const Signin = () => {
         console.log(result.user);
         setUser(result.user);
         toast.success("Github signin successful");
+        navigate(from);
         setLoading(false);
       })
       .catch((error) => {
