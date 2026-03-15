@@ -3,17 +3,18 @@ import logo from "../assets/firebase-logo.png";
 import MyContainer from "./MyContainer";
 import MyLink from "./MyLink";
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { ClockLoader } from "react-spinners";
+import { AuthContext } from "../context/AuthContext";
+import { FadeLoader } from "react-spinners";
 
 const Navbar = () => {
-  const { user, setUser, signOutUserFunc, loading } = useContext(AuthContext);
+  const { signOutUserFunc, user, setUser, loading } = useContext(AuthContext);
 
   const handleSignOut = () => {
+    // sign out...
     signOutUserFunc()
       .then(() => {
-        toast.success("Sign out successful");
+        toast.success("Sign-out successful.");
         setUser(null);
       })
       .catch((error) => {
@@ -34,12 +35,16 @@ const Navbar = () => {
           <li>
             <MyLink to={"/about-us"}>About US</MyLink>
           </li>
-          {user && <li>
-            <MyLink to={"/profile"}>Profile</MyLink>
-          </li>}
+          {user && (
+            <li>
+              <MyLink to={"/profile"}>Profile</MyLink>
+            </li>
+          )}
         </ul>
 
-        {loading ? <ClockLoader color="#e74c3c" /> : user ? (
+        {loading ? (
+          <FadeLoader color="#FFF" />
+        ) : user ? (
           <div className="text-center space-y-3">
             {/* change popover-1 and --anchor-1 names. Use unique names for each dropdown */}
             {/* For TSX uncomment the commented types below */}

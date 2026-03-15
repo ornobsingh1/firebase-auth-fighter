@@ -1,32 +1,32 @@
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import MyContainer from "../components/MyContainer";
+import { toast } from "react-toastify";
+import { use, useRef, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { IoEyeOff } from "react-icons/io5";
-import { useContext, useRef, useState } from "react";
-import { toast } from "react-toastify";
 import { AuthContext } from "../context/AuthContext";
-import { useLocation } from "react-router";
 
 const Signin = () => {
   const [show, setShow] = useState(false);
-
-  const {
-    signInWithEmailAndPasswordFunc,
-    signInWithGoogleFunc,
-    signInWithGithubFunc,
-    sendPasswordResetEmailFunc,
-    user,
-    setUser,
-    setLoading,
-  } = useContext(AuthContext);
+  const emailRef = useRef(null);
 
   const location = useLocation();
   const from = location.state || "/";
   const navigate = useNavigate();
 
-  const emailRef = useRef(null);
+  console.log(location);
+  const {
+    signInWithEmailAndPasswordFunc,
+    signInWithGoogleFunc,
+    signInWithGithubFunc,
+    resetPasswordFunc,
+    setUser,
+    setLoading,
+    user,
+  } = use(AuthContext);
+
   if (user) {
-    return Navigate("/");
+    return navigate("/");
   }
 
   const handleSignIn = (e) => {
@@ -34,21 +34,22 @@ const Signin = () => {
     const email = e.target.email?.value;
     const password = e.target.password?.value;
 
+    // signin...
     signInWithEmailAndPasswordFunc(email, password)
       .then((result) => {
         setLoading(false);
         if (!result.user.emailVerified) {
           return toast.error(
-            "Email is not Verified. Please Check email to Verified your account.",
+            "Please Check your email to verified your account.",
           );
         }
 
         setUser(result.user);
-        toast.success("Signin successful");
-        e.target.reset();
+        toast.success("sign in successful");
         navigate(from);
       })
       .catch((error) => {
+        setLoading(false);
         toast.error(error.message);
       });
   };
@@ -56,10 +57,8 @@ const Signin = () => {
   const handleGoogleSignIn = () => {
     signInWithGoogleFunc()
       .then((result) => {
-        setUser(result.user);
-        toast.success("Google signin successful");
-        navigate(from);
         setLoading(false);
+        setUser(result.user);
       })
       .catch((error) => {
         toast.error(error.message);
@@ -69,11 +68,8 @@ const Signin = () => {
   const handleGithubSignIn = () => {
     signInWithGithubFunc()
       .then((result) => {
-        console.log(result.user);
-        setUser(result.user);
-        toast.success("Github signin successful");
-        navigate(from);
         setLoading(false);
+        setUser(result.user);
       })
       .catch((error) => {
         toast.error(error.message);
@@ -82,10 +78,10 @@ const Signin = () => {
 
   const handleForgetPassword = () => {
     const email = emailRef.current.value;
-    sendPasswordResetEmailFunc(email)
+    resetPasswordFunc(email)
       .then(() => {
-        toast.success("Password reset email sent!");
         setLoading(false);
+        toast.success("Password reset email sent!");
       })
       .catch((error) => {
         toast.error(error.message);

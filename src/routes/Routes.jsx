@@ -5,7 +5,7 @@ import Signup from "../pages/Signup";
 import Root from "../layout/Root";
 import Signin from "../pages/Signin";
 import Home from "../pages/Home";
-import AuthProvider from "../context/AuthProvider";
+import PrivateRoute from "../privateRoute/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -23,9 +23,9 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: (
-          <AuthProvider>
+          <PrivateRoute>
             <Profile />
-          </AuthProvider>
+          </PrivateRoute>
         ),
       },
       {

@@ -40,6 +40,10 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
+  const signOutUserFunc = () => {
+    setLoading(true);
+    return signOut(auth);
+  };
   const signInWithGoogleFunc = () => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
@@ -48,11 +52,7 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     return signInWithPopup(auth, githubProvider);
   };
-  const signOutUserFunc = () => {
-    setLoading(true);
-    return signOut(auth);
-  };
-  const sendPasswordResetEmailFunc = (email) => {
+  const resetPasswordFunc = (email) => {
     setLoading(true);
     return sendPasswordResetEmail(auth, email);
   };
@@ -64,21 +64,19 @@ const AuthProvider = ({ children }) => {
     updateProfileFunc,
     sendEmailVerificationFunc,
     signInWithEmailAndPasswordFunc,
+    signOutUserFunc,
     signInWithGoogleFunc,
     signInWithGithubFunc,
-    signOutUserFunc,
-    sendPasswordResetEmailFunc,
+    resetPasswordFunc,
     loading,
     setLoading,
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currUser) => {
-      console.log(currUser);
-      setUser(currUser);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
-
     return () => {
       unsubscribe();
     };

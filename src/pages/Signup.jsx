@@ -1,14 +1,13 @@
 import { Link, useNavigate } from "react-router";
-import { FaEye } from "react-icons/fa";
-import { IoEyeOff } from "react-icons/io5";
 import MyContainer from "../components/MyContainer";
 import { toast } from "react-toastify";
-import { useContext, useState } from "react";
+import { use, useState } from "react";
+import { FaEye } from "react-icons/fa";
+import { IoEyeOff } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
   const [show, setShow] = useState(false);
-  const navigate = useNavigate();
 
   const {
     createUserWithEmailAndPasswordFunc,
@@ -17,7 +16,8 @@ const Signup = () => {
     setLoading,
     signOutUserFunc,
     setUser,
-  } = useContext(AuthContext);
+  } = use(AuthContext);
+  const navigate = useNavigate();
 
   const handleSignUp = (e) => {
     e.preventDefault();
@@ -26,32 +26,30 @@ const Signup = () => {
     const email = e.target.email?.value;
     const password = e.target.password?.value;
 
+    // password validate...
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
     if (!passwordRegex.test(password)) {
       return toast.error(
-        "Password must be at least 6 chars, include uppercase & lowercase letters, a number, and a special character.",
+        "Password must contain uppercase, lowercase, number, special character and be at least 6 characters.",
       );
     }
 
-    //step-1: create user...
+    // create user...
     createUserWithEmailAndPasswordFunc(email, password)
-      .then(() => {
-        // step-2: update profile...
+      .then((result) => {
+        // update profile...
         updateProfileFunc(displayName, photoURL)
           .then(() => {
-            // step-3: email verification...
+            // email verified...
             sendEmailVerificationFunc()
               .then(() => {
-                setLoading(false);
-
-                // signout..
+                // signout...
                 signOutUserFunc().then(() => {
-                  toast.success(
-                    "Signup successful. Check your email to validate your account.",
-                  );
+                  toast.success("Profile updated! Email verification sent!");
+                  setLoading(false);
                   setUser(null);
-                  navigate("/signin");
+                  navigate("/signin")
                 });
               })
               .catch((error) => {
@@ -61,22 +59,19 @@ const Signup = () => {
           .catch((error) => {
             toast.error(error.message);
           });
+
+        console.log(result.user);
+        toast.success("Sign up successful.");
       })
       .catch((error) => {
         if (error.code === "auth/email-already-in-use") {
-          toast.error("User already exists.");
+          toast.error("Email already in use");
         } else if (error.code === "auth/invalid-email") {
-          toast.error("Invalid email address.");
+          toast.error("Invalid email address");
         } else if (error.code === "auth/weak-password") {
-          toast.error("Password should be at least 6 characters.");
-        } else if (error.code === "auth/user-not-found") {
-          toast.error("No user found with this email.");
-        } else if (error.code === "auth/wrong-password") {
-          toast.error("Incorrect password.");
-        } else if (error.code === "auth/too-many-requests") {
-          toast.error("Too many attempts. Try again later.");
+          toast.error("Password must be at least 6 characters");
         } else if (error.code === "auth/network-request-failed") {
-          toast.error("Network error. Check your internet.");
+          toast.error("Network error. Check your internet");
         } else {
           toast.error(error.message);
         }
